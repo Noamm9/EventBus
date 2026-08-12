@@ -1,1 +1,1 @@
-rootProject.name = "SimpleKotlin"
+rootProject.name = "KTBus"

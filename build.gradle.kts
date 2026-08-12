@@ -7,6 +7,12 @@ plugins {
 
 dependencies {
     implementation("ch.qos.logback:logback-classic:1.4.11")
+    testImplementation(kotlin("test"))
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging { showStandardStreams = true }
 }
 
 tasks.jar { enabled = false }
