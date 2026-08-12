@@ -45,4 +45,14 @@ interface IEventBus {
         receiveCancelled: Boolean,
         callback: EventContext<T>.() -> Unit
     ): IEventListener<T>
+
+    /**
+     * Creates and register a lambda listener for [T] that run once.
+     */
+    fun <T: IEvent> once(
+        eventClass: Class<T>,
+        priority: EventPriority,
+        receiveCancelled: Boolean,
+        callback: EventContext<T>.() -> Unit
+    ): IEventListener<T>
 }

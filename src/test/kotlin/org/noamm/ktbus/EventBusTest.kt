@@ -130,6 +130,47 @@ class EventBusTest {
     }
 
     @Test
+    fun `once runs exactly once then unregisters`() {
+        val bus = bus()
+        var count = 0
+        bus.once<PlainEvent> { count ++ }
+
+        bus.post(PlainEvent())
+        bus.post(PlainEvent())
+
+        assertEquals(1, count)
+        assertEquals(0, bus.listeners[PlainEvent::class.java]?.size ?: 0)
+    }
+
+    @Test
+    fun `once with receiveCancelled still fires after cancellation`() {
+        val bus = bus()
+        var count = 0
+
+        bus.register<CancelableEvent>(priority = EventPriority.HIGHEST) { event.isCanceled = true }
+        bus.once<CancelableEvent>(receiveCancelled = true) { count ++ }
+
+        bus.post(CancelableEvent())
+
+        assertEquals(1, count)
+    }
+
+    @Test
+    fun `once unregisters even when the callback throws`() {
+        val errors = mutableListOf<Exception>()
+        val bus = EventBusBuilder()
+            .setErrorHandler { errors.add(it) }
+            .build()
+        bus.once<PlainEvent> { throw IllegalStateException("boom") }
+
+        bus.post(PlainEvent())
+        bus.post(PlainEvent())
+
+        assertEquals(1, errors.size)
+        assertEquals("boom", errors[0].message)
+    }
+
+    @Test
     @Suppress("UNUSED_PARAMETER")
     fun `subscribing invalid methods throws`() {
         class NoParams {

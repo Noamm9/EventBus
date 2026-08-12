@@ -73,6 +73,20 @@ class EventBus internal constructor(private val exceptionHandler: (Exception) ->
         callback: EventContext<T>.() -> Unit
     ) = listener(eventClass, priority, receiveCancelled, callback).register()
 
+    override fun <T: IEvent> once(
+        eventClass: Class<T>,
+        priority: EventPriority,
+        receiveCancelled: Boolean,
+        callback: EventContext<T>.() -> Unit
+    ) = register(eventClass, priority, receiveCancelled) {
+        try {
+            callback.invoke(this)
+        }
+        finally {
+            listener.unregister()
+        }
+    }
+
 
     internal fun registerListener(listener: EventListener<*>) {
         listeners.compute(listener.eventClass) { _, old ->
@@ -109,3 +123,12 @@ inline fun <reified T: IEvent> EventBus.listener(
     receiveCancelled: Boolean = false,
     noinline callback: EventContext<T>.() -> Unit
 ) = listener(T::class.java, priority, receiveCancelled, callback)
+
+/**
+ * Creates and register a lambda listener for [T] that run once.
+ */
+inline fun <reified T: IEvent> EventBus.once(
+    priority: EventPriority = EventPriority.NORMAL,
+    receiveCancelled: Boolean = false,
+    noinline callback: EventContext<T>.() -> Unit
+) = once(T::class.java, priority, receiveCancelled, callback)
