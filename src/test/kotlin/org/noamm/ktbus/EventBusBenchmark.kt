@@ -65,6 +65,7 @@ class EventBusBenchmark {
     private class Annotated {
         @SubscribeEvent
         fun onBench(event: BenchEvent) {
+
         }
     }
 }

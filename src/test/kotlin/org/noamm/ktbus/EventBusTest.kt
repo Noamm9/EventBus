@@ -1,6 +1,8 @@
 package org.noamm.ktbus
 
+import org.noamm.ktbus.priority.EventPriority
 import kotlin.test.*
+
 
 class EventBusTest {
 
@@ -285,10 +287,6 @@ class EventBusTest {
         val subscriberCount = 20
         val subscribers = (0 until subscriberCount).map { SubscriberWithEvent() }
         subscribers.forEach { bus.subscribe(it) }
-
-        EventListener.create<EventClass>(bus, this) {
-
-        }
 
         val threads = subscribers.map { subscriber ->
             Thread { bus.unsubscribe(subscriber) }

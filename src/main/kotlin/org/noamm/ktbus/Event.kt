@@ -1,8 +1,15 @@
 package org.noamm.ktbus
 
-abstract class Event(val cancelable: Boolean = false) {
+import org.noamm.ktbus.types.IEvent
+
+/**
+ * Base class for everything posted through the bus.
+ *
+ * @property cancelable whether the event can be canceled.
+ */
+abstract class Event(override val cancelable: Boolean = false): IEvent {
     @Volatile
-    open var isCanceled = false
+    override var isCanceled = false
         set(value) {
             if (! cancelable && value) error("tried to cancel an uncancelable event")
             field = value

@@ -1,37 +1,56 @@
 package org.noamm.ktbus
 
+import org.noamm.ktbus.priority.EventPriority
+import org.noamm.ktbus.priority.PriorityComparator
+import org.noamm.ktbus.types.IEvent
+import org.noamm.ktbus.types.IEventBus
 import java.util.concurrent.*
 
 class EventBus internal constructor(private val exceptionHandler: (Exception) -> Unit): IEventBus {
-    internal val listeners = ConcurrentHashMap<Class<out Event>, List<EventListener<*>>>()
+    internal val listeners = ConcurrentHashMap<Class<out IEvent>, List<EventListener<*>>>()
+    private val priorityComparator = PriorityComparator()
 
-    @Suppress("UNCHECKED_CAST")
-    override fun <T: Event> post(event: T): Boolean {
+    /**
+     * Posts the event to every listener registered for the event's class.
+     *
+     * Listeners run from [HIGHEST][EventPriority.HIGHEST] to
+     * [LOWEST][EventPriority.LOWEST] priority. Cancelling the event skips
+     * listeners that were not registered with `receiveCancelled`.
+     *
+     * @return whether the event was canceled.
+     */
+    override fun <T: IEvent> post(event: T): Boolean {
         val eventListeners = listeners[event.javaClass] ?: return event.isCanceled
         var context: EventContext<T>? = null
 
-        for (listener in eventListeners) {
+        @Suppress("UNCHECKED_CAST")
+        for (listener in eventListeners) try {
             val typedListener = listener as EventListener<T>
-            try {
-                if (event.isCanceled && ! typedListener.receiveCancelled) continue
-                val currentContext = context ?: EventContext(event, typedListener).also { context = it }
-                currentContext.listener = typedListener
-                typedListener.callback.invoke(currentContext)
-            }
-            catch (exception: Exception) {
-                exceptionHandler.invoke(exception)
-            }
+            if (event.isCanceled && ! typedListener.receiveCancelled) continue
+            val currentContext = context ?: EventContext(event, typedListener).also { context = it }
+            currentContext.listener = typedListener
+            typedListener.callback.invoke(currentContext)
+        }
+        catch (exception: Exception) {
+            exceptionHandler.invoke(exception)
         }
 
         return event.isCanceled
     }
 
+    /**
+     * Subscribes every method of [subscriber] marked with [SubscribeEvent]
+     * as an event listener.
+     */
     override fun subscribe(subscriber: Any) {
-        for (listener in Subscribers.scan(this, subscriber)) {
+        for (listener in ReflectionHelper.scan(this, subscriber)) {
             listener.register()
         }
     }
 
+    /**
+     * Unsubscribes every event listener belonging to [subscriber].
+     */
     override fun unsubscribe(subscriber: Any) {
         for (eventClass in listeners.keys) {
             listeners.compute(eventClass) { _, old ->
@@ -40,21 +59,24 @@ class EventBus internal constructor(private val exceptionHandler: (Exception) ->
         }
     }
 
-    inline fun <reified T: Event> register(
-        priority: EventPriority = EventPriority.NORMAL,
-        receiveCancelled: Boolean = false,
-        noinline callback: EventContext<T>.() -> Unit
-    ): EventListener<T> = EventListener.create(
-        bus = this,
-        subscriber = this,
-        priority = priority,
-        receiveCancelled = receiveCancelled,
-        callback = callback
-    ).register()
+    override fun <T: IEvent> listener(
+        eventClass: Class<T>,
+        priority: EventPriority,
+        receiveCancelled: Boolean,
+        callback: EventContext<T>.() -> Unit
+    ) = EventListener(this, this, eventClass, priority, receiveCancelled, callback)
+
+    override fun <T: IEvent> register(
+        eventClass: Class<T>,
+        priority: EventPriority,
+        receiveCancelled: Boolean,
+        callback: EventContext<T>.() -> Unit
+    ) = listener(eventClass, priority, receiveCancelled, callback).register()
+
 
     internal fun registerListener(listener: EventListener<*>) {
         listeners.compute(listener.eventClass) { _, old ->
-            (old.orEmpty() + listener).sortedBy { it.priority.ordinal }
+            (old.orEmpty() + listener).sortedWith(priorityComparator)
         }
     }
 
@@ -64,3 +86,26 @@ class EventBus internal constructor(private val exceptionHandler: (Exception) ->
         }
     }
 }
+
+/**
+ * Registers a lambda as a listener for [T] and activates it.
+ *
+ * @return the listener, so you can keep a reference and
+ *         [unregister][EventListener.unregister] it later.
+ */
+inline fun <reified T: IEvent> EventBus.register(
+    priority: EventPriority = EventPriority.NORMAL,
+    receiveCancelled: Boolean = false,
+    noinline callback: EventContext<T>.() -> Unit
+) = register(T::class.java, priority, receiveCancelled, callback)
+
+/**
+ * Creates an inactive lambda listener for [T].
+ *
+ * @return [EventListener].
+ */
+inline fun <reified T: IEvent> EventBus.listener(
+    priority: EventPriority = EventPriority.NORMAL,
+    receiveCancelled: Boolean = false,
+    noinline callback: EventContext<T>.() -> Unit
+) = listener(T::class.java, priority, receiveCancelled, callback)
