@@ -1,5 +1,7 @@
 package org.noamm.ktbus
 
+import org.noamm.ktbus.error.EventBusError.CancelException
+import org.noamm.ktbus.error.EventBusError.SubscriptionException
 import org.noamm.ktbus.priority.EventPriority
 import kotlin.test.*
 
@@ -70,7 +72,7 @@ class EventBusTest {
     fun `setting isCanceled on a non-cancelable event throws`() {
         val event = PlainEvent()
 
-        assertFailsWith<IllegalStateException> { event.isCanceled = true }
+        assertFailsWith<CancelException> { event.isCanceled = true }
     }
 
     @Test
@@ -171,6 +173,59 @@ class EventBusTest {
     }
 
     @Test
+    fun `unsubscribing an unknown subscriber is a no-op`() {
+        val bus = bus()
+        var count = 0
+        bus.register<PlainEvent> { count ++ }
+
+        bus.unsubscribe(Any())
+        bus.post(PlainEvent())
+
+        assertEquals(1, count)
+    }
+
+    @Test
+    fun `unsubscribe does not disturb other listener classes`() {
+        class Subscriber {
+            @SubscribeEvent
+            fun onPlain(event: PlainEvent) {
+            }
+        }
+
+        val bus = bus()
+        val subscriber = Subscriber()
+        bus.subscribe(subscriber)
+        var lambdaCount = 0
+        bus.register<CancelableEvent> { lambdaCount ++ }
+
+        bus.unsubscribe(subscriber)
+        bus.post(PlainEvent())
+        bus.post(CancelableEvent())
+
+        assertEquals(1, lambdaCount)
+    }
+
+    @Test
+    fun `unregistering a never-registered listener is a no-op`() {
+        val bus = bus()
+        var count = 0
+        bus.register<PlainEvent> { count ++ }
+        bus.unregisterListener(EventListener<PlainEvent>(bus, this, PlainEvent::class.java, EventPriority.NORMAL) {})
+
+        bus.post(PlainEvent())
+
+        assertEquals(1, count)
+    }
+
+    @Test
+    fun `unregistering for an empty event class is a no-op`() {
+        val bus = bus()
+        bus.unregisterListener(EventListener<PlainEvent>(bus, this, PlainEvent::class.java, EventPriority.NORMAL) {})
+
+        assertEquals(0, bus.listeners[PlainEvent::class.java]?.size ?: 0)
+    }
+
+    @Test
     @Suppress("UNUSED_PARAMETER")
     fun `subscribing invalid methods throws`() {
         class NoParams {
@@ -202,12 +257,19 @@ class EventBusTest {
             }
         }
 
+        class PrimitiveParam {
+            @SubscribeEvent
+            fun onEvent(event: Int) {
+            }
+        }
+
         val bus = bus()
-        assertFailsWith<IllegalArgumentException> { bus.subscribe(NoParams()) }
-        assertFailsWith<IllegalArgumentException> { bus.subscribe(TooManyParams()) }
-        assertFailsWith<IllegalArgumentException> { bus.subscribe(NonUnitReturn()) }
-        assertFailsWith<IllegalArgumentException> { bus.subscribe(NonEventParam()) }
-        assertFailsWith<IllegalArgumentException> { bus.subscribe(AbstractParam()) }
+        assertFailsWith<SubscriptionException> { bus.subscribe(NoParams()) }
+        assertFailsWith<SubscriptionException> { bus.subscribe(TooManyParams()) }
+        assertFailsWith<SubscriptionException> { bus.subscribe(NonUnitReturn()) }
+        assertFailsWith<SubscriptionException> { bus.subscribe(NonEventParam()) }
+        assertFailsWith<SubscriptionException> { bus.subscribe(AbstractParam()) }
+        assertFailsWith<SubscriptionException> { bus.subscribe(PrimitiveParam()) }
     }
 
     @Test

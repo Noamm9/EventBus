@@ -1,5 +1,6 @@
 package org.noamm.ktbus
 
+import org.noamm.ktbus.error.EventBusError
 import org.noamm.ktbus.types.IEvent
 
 /**
@@ -11,7 +12,7 @@ abstract class Event(override val cancelable: Boolean = false): IEvent {
     @Volatile
     override var isCanceled = false
         set(value) {
-            if (! cancelable && value) error("tried to cancel an uncancelable event")
+            if (! cancelable && value) throw EventBusError.CancelException()
             field = value
         }
 }
