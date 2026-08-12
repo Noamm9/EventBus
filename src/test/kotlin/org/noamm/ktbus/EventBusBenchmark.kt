@@ -1,10 +1,12 @@
 package org.noamm.ktbus
 
+import org.junit.jupiter.api.Tag
 import kotlin.test.Test
 
+@Tag("benchmark")
 class EventBusBenchmark {
 
-    private class BenchEvent : Event(cancelable = true)
+    private class BenchEvent: Event(cancelable = true)
 
     @Test
     fun benchmark() {
@@ -62,6 +64,7 @@ class EventBusBenchmark {
     @Suppress("UNUSED_PARAMETER")
     private class Annotated {
         @SubscribeEvent
-        fun onBench(event: BenchEvent) {}
+        fun onBench(event: BenchEvent) {
+        }
     }
 }
