@@ -1,9 +1,9 @@
-package org.noamm.ktbus.types
+package org.noamm.eventbus.types
 
-import org.noamm.ktbus.EventBus
-import org.noamm.ktbus.EventContext
-import org.noamm.ktbus.SubscribeEvent
-import org.noamm.ktbus.priority.EventPriority
+import org.noamm.eventbus.EventBus
+import org.noamm.eventbus.EventContext
+import org.noamm.eventbus.SubscribeEvent
+import org.noamm.eventbus.priority.EventPriority
 
 /**
  * The contract implemented by [EventBus].

@@ -1,11 +1,11 @@
-package org.noamm.ktbus.error
+package org.noamm.eventbus.error
 
 /**
  * Base type for every exception thrown by the event bus itself.
  */
 abstract class EventBusError(message: String): RuntimeException(message) {
     /**
-     * Thrown when trying to cancel an event that is not [cancelable][org.noamm.ktbus.types.IEvent.cancelable].
+     * Thrown when trying to cancel an event that is not [cancelable][org.noamm.eventbus.types.IEvent.cancelable].
      */
     class CancelException: EventBusError("tried to cancel an uncancelable event")
 

@@ -1,6 +1,6 @@
-package org.noamm.ktbus
+package org.noamm.eventbus
 
-import org.noamm.ktbus.priority.EventPriority
+import org.noamm.eventbus.priority.EventPriority
 
 /**
  * Marks a method as an event listener. The method must take exactly

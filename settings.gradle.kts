@@ -1,1 +1,1 @@
-rootProject.name = "KTBus"
+rootProject.name = "eventbus"

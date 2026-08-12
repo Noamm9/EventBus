@@ -1,6 +1,6 @@
-package org.noamm.ktbus.types
+package org.noamm.eventbus.types
 
-import org.noamm.ktbus.Event
+import org.noamm.eventbus.Event
 
 /**
  * The contract implemented by [Event].

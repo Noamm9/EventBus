@@ -1,9 +1,9 @@
-package org.noamm.ktbus
+package org.noamm.eventbus
 
-import org.noamm.ktbus.priority.EventPriority
-import org.noamm.ktbus.priority.PriorityComparator
-import org.noamm.ktbus.types.IEvent
-import org.noamm.ktbus.types.IEventBus
+import org.noamm.eventbus.priority.EventPriority
+import org.noamm.eventbus.priority.PriorityComparator
+import org.noamm.eventbus.types.IEvent
+import org.noamm.eventbus.types.IEventBus
 import java.util.concurrent.*
 
 class EventBus internal constructor(private val exceptionHandler: (Exception) -> Unit): IEventBus {

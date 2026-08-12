@@ -1,6 +1,6 @@
-package org.noamm.ktbus.priority
+package org.noamm.eventbus.priority
 
-import org.noamm.ktbus.EventListener
+import org.noamm.eventbus.EventListener
 
 internal class PriorityComparator : Comparator<EventListener<*>> {
     override fun compare(o1: EventListener<*>, o2: EventListener<*>): Int =

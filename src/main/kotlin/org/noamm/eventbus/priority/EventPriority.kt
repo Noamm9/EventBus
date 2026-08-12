@@ -1,4 +1,4 @@
-package org.noamm.ktbus.priority
+package org.noamm.eventbus.priority
 
 /**
  * Order listeners are invoked for an event, highest first.

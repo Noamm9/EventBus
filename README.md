@@ -1,51 +1,76 @@
-# Simple Kotlin Gradle Template
+# EventBus
 
-A minimalist template for building Kotlin applications with Gradle.
+A lightweight Kotlin event bus with listener priorities, event cancellation
+and annotation-based subscription.
 
-## Tech Stack
+## Install
 
-- **Language**: Kotlin
-- **Build System**: Gradle (Kotlin DSL)
-- **Plugin**: ShadowJar (8.1.1)
-- **Logging**: Logback Classic
+**Maven Central**
 
-## Project Structure
+```kotlin
+repositories { mavenCentral() }
 
-```text
-├── build.gradle.kts        # Main build configuration
-├── settings.gradle.kts     # Project settings
-├── src/
-│   └── main/
-│       ├── kotlin/         # Your Kotlin source code
-│       └── resources/      # Configuration files
+dependencies {
+    implementation("org.noamm:eventbus:1.0.0")
+}
 ```
 
-## Getting Started
+## Usage
 
-### Requirements
+Define events by extending [`Event`](src/main/kotlin/org/noamm/eventbus/Event.kt):
 
-- [JDK 17+](https://adoptium.net/) installed on your machine.
-
-### Building the Project
-
-To compile the code and generate a "fat" JAR:
-
-```bash
-./gradlew build
+```kotlin
+class PlayerJoinEvent(val name: String) : Event()
+class DamageEvent : Event(cancelable = true)
 ```
 
-The resulting JAR file will be located in `build/libs/`.
+Create a bus and post events:
 
-### Running the Application
+```kotlin
+val bus = bus { setErrorHandler { throwable -> throw throwable } }
 
-You can run the generated JAR using the following command:
-
-```bash
-java -jar build/libs/SimpleKotlin.jar
+bus.post(PlayerJoinEvent("Notch"))
+bus.post(DamageEvent())
 ```
 
-## Customization
+### Annotated listeners
 
-1. **Change Project Name**: Update `rootProject.name` in `settings.gradle.kts`.
-2. **Update Dependencies**: Add or modify libraries in `build.gradle.kts`.
-3. **Configure Logging**: Modify `src/main/resources/logback.xml` to adjust logging levels and appenders.
+Mark methods with `@SubscribeEvent` and register the subscriber object:
+
+```kotlin
+val playerTracker = object {
+    @SubscribeEvent(priority = EventPriority.HIGH)
+    fun onJoin(event: PlayerJoinEvent) = println("${event.name} joined")
+}
+
+bus.subscribe(playerTracker)
+bus.unsubscribe(playerTracker)
+```
+
+### Lambda listeners
+
+Register inline listeners for an event class:
+
+```kotlin
+bus.register<DamageEvent> { event ->
+    event.isCanceled = true
+}
+
+bus.once<PlayerJoinEvent> { }
+```
+
+`register` returns the [`EventListener`](src/main/kotlin/org/noamm/eventbus/EventListener.kt)
+so you can `unregister()` it later.
+
+### Behavior
+
+- Listeners run from [`HIGHEST`](src/main/kotlin/org/noamm/eventbus/priority/EventPriority.kt)
+  to `LOWEST` priority.
+- Canceling an event skips listeners not registered with `receiveCancelled = true`.
+- Exceptions thrown by listeners are routed to the error handler configured on
+  the [`EventBusBuilder`](src/main/kotlin/org/noamm/eventbus/EventBusBuilder.kt)
+  (rethrown by default).
+
+## License
+
+[CC0 1.0 Universal](LICENSE)

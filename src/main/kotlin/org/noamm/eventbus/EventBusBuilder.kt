@@ -1,6 +1,6 @@
-package org.noamm.ktbus
+package org.noamm.eventbus
 
-import org.noamm.ktbus.types.IEvent
+import org.noamm.eventbus.types.IEvent
 
 /**
  * Returns a new [EventBus] using the builder lambda.

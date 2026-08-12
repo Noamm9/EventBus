@@ -1,8 +1,8 @@
-package org.noamm.ktbus
+package org.noamm.eventbus
 
-import org.noamm.ktbus.error.EventBusError.CancelException
-import org.noamm.ktbus.error.EventBusError.SubscriptionException
-import org.noamm.ktbus.priority.EventPriority
+import org.noamm.eventbus.error.EventBusError.CancelException
+import org.noamm.eventbus.error.EventBusError.SubscriptionException
+import org.noamm.eventbus.priority.EventPriority
 import kotlin.test.*
 
 

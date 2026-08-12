@@ -1,4 +1,4 @@
-package org.noamm.ktbus
+package org.noamm.eventbus
 
 import org.junit.jupiter.api.Tag
 import kotlin.test.Test

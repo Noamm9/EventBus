@@ -1,7 +1,7 @@
-package org.noamm.ktbus
+package org.noamm.eventbus
 
-import org.noamm.ktbus.error.EventBusError
-import org.noamm.ktbus.types.IEvent
+import org.noamm.eventbus.error.EventBusError
+import org.noamm.eventbus.types.IEvent
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier

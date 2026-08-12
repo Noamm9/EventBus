@@ -1,8 +1,8 @@
-package org.noamm.ktbus
+package org.noamm.eventbus
 
-import org.noamm.ktbus.priority.EventPriority
-import org.noamm.ktbus.types.IEvent
-import org.noamm.ktbus.types.IEventListener
+import org.noamm.eventbus.priority.EventPriority
+import org.noamm.eventbus.types.IEvent
+import org.noamm.eventbus.types.IEventListener
 
 /**
  * A single event listener registration, created via
