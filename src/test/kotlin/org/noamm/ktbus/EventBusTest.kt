@@ -1,15 +1,11 @@
 package org.noamm.ktbus
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class EventBusTest {
 
-    private class CancelableEvent : Event(cancelable = true)
-    private class PlainEvent : Event()
+    private class CancelableEvent: Event(cancelable = true)
+    private class PlainEvent: Event()
 
     @Test
     fun `post invokes registered listener with the event`() {
@@ -83,7 +79,7 @@ class EventBusTest {
 
             @SubscribeEvent
             fun onCancelable(event: CancelableEvent) {
-                count++
+                count ++
                 last = event
             }
         }
@@ -108,7 +104,7 @@ class EventBusTest {
     fun `unregister stops delivery and reregister works`() {
         val bus = bus()
         var count = 0
-        val listener = bus.register<PlainEvent> { count++ }
+        val listener = bus.register<PlainEvent> { count ++ }
 
         bus.post(PlainEvent())
         listener.unregister()
@@ -123,7 +119,7 @@ class EventBusTest {
     fun `registering the same listener twice is idempotent`() {
         val bus = bus()
         var count = 0
-        val listener = bus.register<PlainEvent> { count++ }
+        val listener = bus.register<PlainEvent> { count ++ }
 
         listener.register()
         bus.post(PlainEvent())
@@ -136,12 +132,14 @@ class EventBusTest {
     fun `subscribing invalid methods throws`() {
         class NoParams {
             @SubscribeEvent
-            fun onEvent() {}
+            fun onEvent() {
+            }
         }
 
         class TooManyParams {
             @SubscribeEvent
-            fun onEvent(a: PlainEvent, b: PlainEvent) {}
+            fun onEvent(a: PlainEvent, b: PlainEvent) {
+            }
         }
 
         class NonUnitReturn {
@@ -151,12 +149,14 @@ class EventBusTest {
 
         class NonEventParam {
             @SubscribeEvent
-            fun onEvent(value: String) {}
+            fun onEvent(value: String) {
+            }
         }
 
         class AbstractParam {
             @SubscribeEvent
-            fun onEvent(event: Event) {}
+            fun onEvent(event: Event) {
+            }
         }
 
         val bus = bus()
@@ -188,6 +188,28 @@ class EventBusTest {
     }
 
     @Test
+    fun `annotated throwing listener routes original exception to handler`() {
+        class Subscriber {
+            @SubscribeEvent
+            fun onEvent(event: PlainEvent) {
+                throw IllegalStateException("boom")
+            }
+        }
+
+        val errors = mutableListOf<Exception>()
+        val bus = EventBusBuilder()
+            .setErrorHandler { errors.add(it) }
+            .build()
+        bus.subscribe(Subscriber())
+
+        bus.post(PlainEvent())
+
+        assertEquals(1, errors.size)
+        assertEquals(IllegalStateException::class, errors[0]::class)
+        assertEquals("boom", errors[0].message)
+    }
+
+    @Test
     fun `post without listeners returns false`() {
         val bus = bus()
 
@@ -213,8 +235,8 @@ class EventBusTest {
         var plainCount = 0
         var cancelableCount = 0
 
-        bus.register<PlainEvent> { plainCount++ }
-        bus.register<CancelableEvent> { cancelableCount++ }
+        bus.register<PlainEvent> { plainCount ++ }
+        bus.register<CancelableEvent> { cancelableCount ++ }
 
         bus.post(PlainEvent())
         bus.post(CancelableEvent())
@@ -264,6 +286,10 @@ class EventBusTest {
         val subscribers = (0 until subscriberCount).map { SubscriberWithEvent() }
         subscribers.forEach { bus.subscribe(it) }
 
+        EventListener.create<EventClass>(bus, this) {
+
+        }
+
         val threads = subscribers.map { subscriber ->
             Thread { bus.unsubscribe(subscriber) }
         }
@@ -275,12 +301,13 @@ class EventBusTest {
         }
     }
 
-    private class EventClass : Event()
+    private class EventClass: Event()
 
-    private class BusEvent : Event()
+    private class BusEvent: Event()
 
     private class SubscriberWithEvent {
         @SubscribeEvent
-        fun onEvent(event: EventClass) {}
+        fun onEvent(event: EventClass) {
+        }
     }
 }
