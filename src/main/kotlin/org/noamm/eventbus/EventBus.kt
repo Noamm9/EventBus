@@ -8,7 +8,18 @@ import java.util.concurrent.*
 
 class EventBus internal constructor(private val exceptionHandler: (Exception) -> Unit): IEventBus {
     internal val listeners = ConcurrentHashMap<Class<out IEvent>, List<EventListener<*>>>()
-    private val priorityComparator = PriorityComparator()
+
+    internal fun registerListener(listener: EventListener<*>) {
+        listeners.compute(listener.eventClass) { _, old ->
+            (old.orEmpty() + listener).sortedWith(PriorityComparator)
+        }
+    }
+
+    internal fun unregisterListener(listener: EventListener<*>) {
+        listeners.compute(listener.eventClass) { _, old ->
+            old?.filter { it !== listener }?.takeIf(Collection<*>::isNotEmpty)
+        }
+    }
 
     /**
      * Posts the event to every listener registered for the event's class.
@@ -79,25 +90,8 @@ class EventBus internal constructor(private val exceptionHandler: (Exception) ->
         receiveCancelled: Boolean,
         callback: EventContext<T>.() -> Unit
     ) = register(eventClass, priority, receiveCancelled) {
-        try {
-            callback.invoke(this)
-        }
-        finally {
-            listener.unregister()
-        }
-    }
-
-
-    internal fun registerListener(listener: EventListener<*>) {
-        listeners.compute(listener.eventClass) { _, old ->
-            (old.orEmpty() + listener).sortedWith(priorityComparator)
-        }
-    }
-
-    internal fun unregisterListener(listener: EventListener<*>) {
-        listeners.compute(listener.eventClass) { _, old ->
-            old?.filter { it !== listener }?.takeIf(Collection<*>::isNotEmpty)
-        }
+        listener.unregister()
+        callback.invoke(this)
     }
 }
 
