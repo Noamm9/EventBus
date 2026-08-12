@@ -1,13 +1,14 @@
 package org.noamm.ktbus
 
-class EventListener<T : Event>(
+class EventListener<T: Event>(
     internal val bus: EventBus,
-    val subscriber: Any,
-    val eventClass: Class<out Event>,
-    val priority: EventPriority,
-    val receiveCancelled: Boolean = false,
-    val callback: EventContext<T>.() -> Unit
+    internal val subscriber: Any,
+    internal val eventClass: Class<out Event>,
+    internal val priority: EventPriority,
+    internal val receiveCancelled: Boolean = false,
+    internal val callback: EventContext<T>.() -> Unit
 ) {
+    @Volatile
     var isActive = false
         private set
 
@@ -19,14 +20,14 @@ class EventListener<T : Event>(
     }
 
     fun unregister(): EventListener<T> {
-        if (!isActive) return this
+        if (! isActive) return this
         isActive = false
         bus.unregisterListener(this)
         return this
     }
 
     companion object {
-        inline fun <reified T : Event> create(
+        inline fun <reified T: Event> create(
             bus: EventBus,
             subscriber: Any,
             priority: EventPriority = EventPriority.NORMAL,

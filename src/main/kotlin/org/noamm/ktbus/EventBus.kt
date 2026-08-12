@@ -1,25 +1,24 @@
 package org.noamm.ktbus
 
-import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.*
 
-class EventBus internal constructor(private val exceptionHandler: (Exception) -> Unit) : IEventBus {
-
+class EventBus internal constructor(private val exceptionHandler: (Exception) -> Unit): IEventBus {
     internal val listeners = ConcurrentHashMap<Class<out Event>, List<EventListener<*>>>()
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Event> post(event: T): Boolean {
+    override fun <T: Event> post(event: T): Boolean {
         val eventListeners = listeners[event.javaClass] ?: return event.isCanceled
         var context: EventContext<T>? = null
 
         for (listener in eventListeners) {
             val typedListener = listener as EventListener<T>
             try {
-                if (event.isCanceled && !typedListener.receiveCancelled) continue
-
+                if (event.isCanceled && ! typedListener.receiveCancelled) continue
                 val currentContext = context ?: EventContext(event, typedListener).also { context = it }
                 currentContext.listener = typedListener
                 typedListener.callback.invoke(currentContext)
-            } catch (exception: Exception) {
+            }
+            catch (exception: Exception) {
                 exceptionHandler.invoke(exception)
             }
         }
@@ -41,7 +40,7 @@ class EventBus internal constructor(private val exceptionHandler: (Exception) ->
         }
     }
 
-    inline fun <reified T : Event> register(
+    inline fun <reified T: Event> register(
         priority: EventPriority = EventPriority.NORMAL,
         receiveCancelled: Boolean = false,
         noinline callback: EventContext<T>.() -> Unit
@@ -61,7 +60,7 @@ class EventBus internal constructor(private val exceptionHandler: (Exception) ->
 
     internal fun unregisterListener(listener: EventListener<*>) {
         listeners.compute(listener.eventClass) { _, old ->
-            old?.filter { it !== listener }?.takeIf { it.isNotEmpty() }
+            old?.filter { it !== listener }?.takeIf(Collection<*>::isNotEmpty)
         }
     }
 }
