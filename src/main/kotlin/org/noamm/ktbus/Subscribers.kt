@@ -1,5 +1,6 @@
 package org.noamm.ktbus
 
+import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
@@ -17,7 +18,11 @@ internal object Subscribers {
                 priority = annotation.priority,
                 receiveCancelled = annotation.receiveCancelled
             ) {
-                method.invoke(subscriber, event)
+                try {
+                    method.invoke(subscriber, event)
+                } catch (exception: InvocationTargetException) {
+                    throw exception.cause ?: exception
+                }
             }
         }
         return listeners
