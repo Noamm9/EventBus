@@ -11,7 +11,7 @@ and annotation-based subscription.
 repositories { mavenCentral() }
 
 dependencies {
-    implementation("org.noamm:eventbus:1.0.1")
+    implementation("org.noamm:eventbus:1.0.2")
 }
 ```
 

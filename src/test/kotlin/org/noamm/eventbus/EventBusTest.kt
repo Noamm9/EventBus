@@ -1,10 +1,11 @@
+@file:Suppress("unused")
+
 package org.noamm.eventbus
 
 import org.noamm.eventbus.error.EventBusError.CancelException
 import org.noamm.eventbus.error.EventBusError.SubscriptionException
 import org.noamm.eventbus.priority.EventPriority
 import kotlin.test.*
-
 
 class EventBusTest {
 

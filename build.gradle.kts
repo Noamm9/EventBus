@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "org.noamm"
-version = "1.0.1"
+version = "1.0.2"
 
 java {
     withSourcesJar()
@@ -34,6 +34,8 @@ tasks.test {
 
 tasks.register<Test>("benchmark") {
     useJUnitPlatform { includeTags("benchmark") }
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
     testLogging { showStandardStreams = true }
 }
 

@@ -93,36 +93,36 @@ class EventBus internal constructor(private val exceptionHandler: (Exception) ->
         listener.unregister()
         callback.invoke(this)
     }
+
+    /**
+     * Registers a lambda as a listener for [T] and activates it.
+     *
+     * @return the listener, so you can keep a reference and
+     *         [unregister][EventListener.unregister] it later.
+     */
+    inline fun <reified T: IEvent> register(
+        priority: EventPriority = EventPriority.NORMAL,
+        receiveCancelled: Boolean = false,
+        noinline callback: EventContext<T>.() -> Unit
+    ) = register(T::class.java, priority, receiveCancelled, callback)
+
+    /**
+     * Creates an inactive lambda listener for [T].
+     *
+     * @return [EventListener].
+     */
+    inline fun <reified T: IEvent> listener(
+        priority: EventPriority = EventPriority.NORMAL,
+        receiveCancelled: Boolean = false,
+        noinline callback: EventContext<T>.() -> Unit
+    ) = listener(T::class.java, priority, receiveCancelled, callback)
+
+    /**
+     * Creates and register a lambda listener for [T] that run once.
+     */
+    inline fun <reified T: IEvent> once(
+        priority: EventPriority = EventPriority.NORMAL,
+        receiveCancelled: Boolean = false,
+        noinline callback: EventContext<T>.() -> Unit
+    ) = once(T::class.java, priority, receiveCancelled, callback)
 }
-
-/**
- * Registers a lambda as a listener for [T] and activates it.
- *
- * @return the listener, so you can keep a reference and
- *         [unregister][EventListener.unregister] it later.
- */
-inline fun <reified T: IEvent> EventBus.register(
-    priority: EventPriority = EventPriority.NORMAL,
-    receiveCancelled: Boolean = false,
-    noinline callback: EventContext<T>.() -> Unit
-) = register(T::class.java, priority, receiveCancelled, callback)
-
-/**
- * Creates an inactive lambda listener for [T].
- *
- * @return [EventListener].
- */
-inline fun <reified T: IEvent> EventBus.listener(
-    priority: EventPriority = EventPriority.NORMAL,
-    receiveCancelled: Boolean = false,
-    noinline callback: EventContext<T>.() -> Unit
-) = listener(T::class.java, priority, receiveCancelled, callback)
-
-/**
- * Creates and register a lambda listener for [T] that run once.
- */
-inline fun <reified T: IEvent> EventBus.once(
-    priority: EventPriority = EventPriority.NORMAL,
-    receiveCancelled: Boolean = false,
-    noinline callback: EventContext<T>.() -> Unit
-) = once(T::class.java, priority, receiveCancelled, callback)

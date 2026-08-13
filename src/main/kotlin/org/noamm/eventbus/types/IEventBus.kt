@@ -31,8 +31,8 @@ interface IEventBus {
      */
     fun <T: IEvent> listener(
         eventClass: Class<T>,
-        priority: EventPriority,
-        receiveCancelled: Boolean,
+        priority: EventPriority = EventPriority.NORMAL,
+        receiveCancelled: Boolean = false,
         callback: EventContext<T>.() -> Unit
     ): IEventListener<T>
 
@@ -41,8 +41,8 @@ interface IEventBus {
      */
     fun <T: IEvent> register(
         eventClass: Class<T>,
-        priority: EventPriority,
-        receiveCancelled: Boolean,
+        priority: EventPriority = EventPriority.NORMAL,
+        receiveCancelled: Boolean = false,
         callback: EventContext<T>.() -> Unit
     ): IEventListener<T>
 
@@ -51,8 +51,8 @@ interface IEventBus {
      */
     fun <T: IEvent> once(
         eventClass: Class<T>,
-        priority: EventPriority,
-        receiveCancelled: Boolean,
+        priority: EventPriority = EventPriority.NORMAL,
+        receiveCancelled: Boolean = false,
         callback: EventContext<T>.() -> Unit
     ): IEventListener<T>
 }
