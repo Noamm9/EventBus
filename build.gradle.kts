@@ -1,7 +1,7 @@
 repositories { mavenCentral() }
 
 plugins {
-    kotlin("jvm") version "2.4.10"
+    kotlin("jvm") version "2.4.20"
     `maven-publish`
     jacoco
     id("org.jetbrains.dokka") version "2.2.0"
