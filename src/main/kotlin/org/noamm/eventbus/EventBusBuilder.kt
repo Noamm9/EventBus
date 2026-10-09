@@ -35,22 +35,3 @@ class EventBusBuilder {
      */
     fun build() = EventBus(errorHandler, dispatcher)
 }
-
-fun main() {
-    val EventBus = EventBusBuilder().setDispatcher(Dispatchers.IO).build()
-
-    EventBus.registerAsync<Event> {
-        delay(500)
-        print("Hello World!")
-    }
-
-    val DungeonMap = object {
-        @SubscribeEvent(async = true)
-        suspend fun onTick(event: Event) {
-            delay(500)
-            print("Hello World!")
-        }
-    }
-
-    EventBus.subscribe(DungeonMap)
-}
