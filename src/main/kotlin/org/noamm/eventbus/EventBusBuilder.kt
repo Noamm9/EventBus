@@ -1,6 +1,6 @@
 package org.noamm.eventbus
 
-import org.noamm.eventbus.types.IEvent
+import kotlinx.coroutines.*
 
 /**
  * Returns a new [EventBus] using the builder lambda.
@@ -16,6 +16,7 @@ fun bus(builder: EventBusBuilder.() -> Unit = {}) = EventBusBuilder().apply(buil
  */
 class EventBusBuilder {
     private var errorHandler: (Exception) -> Unit = { throw it }
+    private var dispatcher: CoroutineDispatcher = Dispatchers.Default
 
     /**
      * Sets the handler invoked whenever a listener throws.
@@ -24,7 +25,32 @@ class EventBusBuilder {
     fun setErrorHandler(handler: (Exception) -> Unit) = apply { this.errorHandler = handler }
 
     /**
+     * Sets the dispatcher async listeners and [EventBus.postAsync] run on.
+     * [Dispatchers.Default] is used by default.
+     */
+    fun setDispatcher(dispatcher: CoroutineDispatcher) = apply { this.dispatcher = dispatcher }
+
+    /**
      * Creates the [EventBus]
      */
-    fun build() = EventBus(errorHandler)
+    fun build() = EventBus(errorHandler, dispatcher)
+}
+
+fun main() {
+    val EventBus = EventBusBuilder().setDispatcher(Dispatchers.IO).build()
+
+    EventBus.registerAsync<Event> {
+        delay(500)
+        print("Hello World!")
+    }
+
+    val DungeonMap = object {
+        @SubscribeEvent(async = true)
+        suspend fun onTick(event: Event) {
+            delay(500)
+            print("Hello World!")
+        }
+    }
+
+    EventBus.subscribe(DungeonMap)
 }

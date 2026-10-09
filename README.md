@@ -11,7 +11,7 @@ and annotation-based subscription.
 repositories { mavenCentral() }
 
 dependencies {
-    implementation("org.noamm:eventbus:1.0.2")
+    implementation("org.noamm:eventbus:1.0.3")
 }
 ```
 
@@ -61,6 +61,28 @@ bus.once<PlayerJoinEvent> { }
 
 `register` returns the [`EventListener`](src/main/kotlin/org/noamm/eventbus/EventListener.kt)
 so you can `unregister()` it later.
+
+### Async listeners
+
+Async listeners are suspending and read-only: they run on the bus dispatcher
+after every other listener, so they cannot cancel the event or change the
+result of `post`.
+
+```kotlin
+bus.registerAsync<DamageEvent> {
+    delay(100)
+    database.save(event)
+}
+
+@SubscribeEvent(async = true)
+suspend fun onDamage(event: DamageEvent) { }
+
+bus.postAsync(DamageEvent()) // fire-and-forget, returns a Job
+```
+
+Async work runs on `Dispatchers.Default` unless set with
+`bus { setDispatcher(Dispatchers.IO) }`. Call `bus.close()` to cancel
+pending async work.
 
 ### Behavior
 

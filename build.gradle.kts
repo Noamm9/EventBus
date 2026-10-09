@@ -11,7 +11,7 @@ plugins {
 }
 
 group = "org.noamm"
-version = "1.0.2"
+version = "1.0.3"
 
 java {
     withSourcesJar()
@@ -24,6 +24,7 @@ val javadocJar = tasks.register<Jar>("javadocJar") {
 }
 
 dependencies {
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     testImplementation(kotlin("test"))
 }
 
