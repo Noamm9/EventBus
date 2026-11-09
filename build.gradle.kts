@@ -5,7 +5,7 @@ plugins {
     `maven-publish`
     jacoco
     id("org.jetbrains.dokka") version "2.2.0"
-    id("org.jetbrains.dokka-javadoc") version "2.2.0"
+    id("org.jetbrains.dokka-javadoc") version "2.3.0"
     signing
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
